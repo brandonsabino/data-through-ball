@@ -1,0 +1,61 @@
+$red: #ff102f;
+$white: #ffffff;
+$blue: #004aa4;
+
+@font-face {
+  font-family: 'Chicago';
+  src: url('/Typography/Chicago.ttf');
+}
+
+body {
+  margin: 0;
+  padding: 25px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Chicago', Arial, Helvetica, sans-serif;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+h1 {
+  display: inline-block;
+  padding-bottom: 5px;
+  border-bottom: 4px solid $red;
+}
+
+.filters {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+table {
+  margin: 0 auto;
+  width: 100%;
+  border-collapse: collapse;
+  cursor: crosshair;
+}
+
+thead {
+  color: $white;
+  background-color: $red;
+  text-align: left;
+}
+
+th, td {
+  border: 2px solid $red;
+
+  tbody & {
+    border-color: $blue;
+  }
+}
+
+tbody tr:hover,
+tbody tr:focus {
+  background-color: $blue;
+  color: $white;
+  transition-duration: 100ms;
+}
