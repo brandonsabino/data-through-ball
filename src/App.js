@@ -3,21 +3,41 @@ import Papa from "papaparse";
 
 function App() {
   const [data, setData] = useState([]);
-  const [showFullTable, setShowFullTable] = useState(false);
-  const simplified = ["RANK", "NAME", "TEAM", "POS", "PPG"];
+  const [displayData, setDisplayData] = useState([]);
+  const [uniqueTeams, setUniqueTeams] = useState([]);
+  const [showFullTable, setShowFullTable] = useState(false); // Toggle for showing full/limited rows
+  const [showSimplified, setShowSimplified] = useState(true); // Toggle for simplified/full columns
+
+  const simplifiedColumns = ["RANK", "NAME", "TEAM", "POS", "PPG"]; // Columns for simplified view
 
   useEffect(() => {
     Papa.parse("/nba-metrics-23-24.csv", {
       download: true,
       header: true,
       complete: (result) => {
-        setData(result.data); // Ensure entire dataset is set
+        const fullData = result.data;
+        setData(fullData);
+
+        // Store unique teams
+        const teams = fullData.map((row) => row["TEAM"]);
+        const uniqueTeamsArray = Array.from(new Set(teams));
+        setUniqueTeams(uniqueTeamsArray);
+
+        // Set initial display data to first 25 rows
+        setDisplayData(fullData.slice(0, 25));
       },
     });
   }, []);
 
-  const toggleFullTable = () => {
-    setShowFullTable(!showFullTable);
+  // Update displayed data when toggling full/limited table
+  const handleTableToggle = () => {
+    setShowFullTable((prevState) => !prevState);
+    setDisplayData(showFullTable ? data.slice(0, 25) : data); // Toggle between all and first 25 rows
+  };
+
+  // Toggle between simplified and full columns
+  const handleSimplifiedToggle = () => {
+    setShowSimplified((prevState) => !prevState);
   };
 
   return (
@@ -29,38 +49,46 @@ function App() {
           <input
             type="checkbox"
             checked={showFullTable}
-            onChange={toggleFullTable}
+            onChange={handleTableToggle}
           />
-          Show Full Table
+          Show Full Table (All Rows)
+        </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={!showSimplified}
+            onChange={handleSimplifiedToggle}
+          />
+          Show Simplified Columns
+        </label>
+        <label>
+          <select>
+            {uniqueTeams.map((team, index) => (
+              <option key={index}>{team}</option>
+            ))}
+          </select>
         </label>
       </div>
 
       <table>
         <thead>
           <tr>
-            {/* Render headers dynamically based on whether the full table is shown */}
-            {data.length > 0 && (showFullTable ?
-              Object.keys(data[0]).map((key) => (
-                <th key={key}>{key}</th>
-              )) :
-              simplified.map((key) => (
-                <th key={key}>{key}</th>
-              ))
-            )}
+            {displayData.length > 0 &&
+              Object.keys(displayData[0])
+                .filter((key) => showSimplified || simplifiedColumns.includes(key)) // Filter headers based on simplified toggle
+                .map((key) => (
+                  <th key={key}>{key}</th>
+                ))}
           </tr>
         </thead>
         <tbody>
-          {/* Render each row of data, showing either full or simplified columns */}
-          {data.map((row, index) => (
+          {displayData.map((row, index) => (
             <tr key={index}>
-              {(showFullTable ?
-                Object.keys(row).map((key) => (
-                  <td key={key}>{row[key] || index}</td> // Full data
-                )) :
-                simplified.map((key) => (
-                  <td key={key}>{row[key] || index}</td> // Simplified data
-                ))
-              )}
+              {Object.keys(row)
+                .filter((key) => showSimplified || simplifiedColumns.includes(key)) // Filter cells based on simplified toggle
+                .map((key, i) => (
+                  <td key={i}>{row[key] !== "" ? row[key] : index + 1}</td>
+                ))}
             </tr>
           ))}
         </tbody>
